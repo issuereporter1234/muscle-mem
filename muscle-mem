@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+change(){
+	local FILENAME=$1
+	read -p "$FILENAME is already defined. Do you want to change it? [Y/n]" OV
+	if [[ $OV == "" || $OV == "Y" || $OV == "y" ]]; then
+		write $FILENAME
+	fi
+}
+
+write(){
+	
+	local PASSWORD=""
+	local PASSWORD2=""
+	local FILENAME=$1
+	
+	read -s -p "Enter new password: " PASSWORD
+	echo 
+	read -s -p "Enter it again: " PASSWORD2
+	echo
+	if [[ $PASSWORD == $PASSWORD2 ]]; then
+		local HASH=$( echo -n $PASSWORD | sha256sum | awk '{ print $1 }')
+				echo $HASH > "./.passwds/$FILENAME"
+			
+	else
+		echo "Passwords do not match"
+	fi
+}
+
+delete(){
+	if [ -e "./.passwds/$1" ] ; then
+		rm ./.passwds/$1
+	else
+		echo "File not found"
+	fi
+}
+
+practise(){
+	local OPTION=$1
+	local HASH=$(cat ./.passwds/$OPTION)
+	while [[ true ]]; do
+		read -s -p "Enter password: " PASSWORD
+		PASSWORD=$(echo -n $PASSWORD | sha256sum | awk '{print $1}')
+		if [[ $HASH == $PASSWORD ]]; then
+			echo "Correct"
+		else
+			echo "False"
+		fi
+	done
+}
+
+MODE=$1
+OPTION=$2
+if [ ! -d ./.passwds ]; then
+                mkdir .passwds
+        fi
+
+if [[ $# == 0 ]]; then
+	echo "No arguments entered"
+	echo "muscle-mem [MODE] [OPTION]"
+	exit 1
+elif [[ $MODE == "add" && $# == 2 ]]; then
+	if [[ -e "./.passwds/$OPTION" ]]; then
+		change $OPTION
+	else
+		write $OPTION
+	fi
+elif [[ $MODE == "delete" && $# == 2 ]]; then
+	delete $OPTION
+elif [[ $MODE == "practise" && $# == 2 ]]; then
+	practise $OPTION
+elif [[ $MODE == "show" && $# == 1 ]]; then
+	ls ./.passwds
+else 
+	echo "No supported arguments"
+	exit 1
+fi
