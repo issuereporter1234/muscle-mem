@@ -4,7 +4,7 @@ change(){
 	local FILENAME=$1
 	read -p "$FILENAME is already defined. Do you want to change it? [Y/n]" OV
 	if [[ $OV == "" || $OV == "Y" || $OV == "y" ]]; then
-		write $FILENAME
+		write "$FILENAME"
 	fi
 }
 
@@ -19,28 +19,31 @@ write(){
 	read -s -p "Enter it again: " PASSWORD2
 	echo
 	if [[ $PASSWORD == $PASSWORD2 ]]; then
-		local HASH=$( echo -n $PASSWORD | sha256sum | awk '{ print $1 }')
-				echo $HASH > "./.passwds/$FILENAME"
-				chmod 400 "./.passwds/$FILENAME"			
+
+		HASH=$(sha256sum <<< "$(printf "%s" "$PASSWORD")")
+		HASH=${HASH%% *}
+		echo $HASH > ./.passwds/"$FILENAME"
+		chmod 600 ./.passwds/"$FILENAME"			
 	else
 		echo "Passwords do not match"
 	fi
 }
 
 delete(){
-	if [ -e "./.passwds/$1" ] ; then
-		rm ./.passwds/$1
+	if [ -e ./.passwds/"$1" ] ; then
+		rm ./.passwds/"$1"
 	else
 		echo "File not found"
 	fi
 }
 
-practise(){
+practice(){
 	local OPTION=$1
-	local HASH=$(cat ./.passwds/$OPTION)
+	local HASH=$(< ./.passwds/"$OPTION")
 	while [[ true ]]; do
 		read -s -p "Enter password: " PASSWORD
-		PASSWORD=$(echo -n $PASSWORD | sha256sum | awk '{print $1}')
+		PASSWORD=$(sha256sum <<< $(printf "%s" "$PASSWORD"))
+		PASSWORD=${PASSWORD%% *}
 		if [[ $HASH == $PASSWORD ]]; then
 			echo "Correct"
 		else
@@ -60,15 +63,15 @@ if [[ $# == 0 ]]; then
 	echo "muscle-mem [MODE] [OPTION]"
 	exit 1
 elif [[ $MODE == "add" && $# == 2 ]]; then
-	if [[ -e "./.passwds/$OPTION" ]]; then
-		change $OPTION
+	if [[ -e ./.passwds/"$OPTION" ]]; then
+		change "$OPTION"
 	else
-		write $OPTION
+		write "$OPTION"
 	fi
 elif [[ $MODE == "delete" && $# == 2 ]]; then
-	delete $OPTION
-elif [[ $MODE == "practise" && $# == 2 ]]; then
-	practise $OPTION
+	delete "$OPTION"
+elif [[ $MODE == "practice" && $# == 2 ]]; then
+	practice "$OPTION"
 elif [[ $MODE == "show" && $# == 1 ]]; then
 	ls ./.passwds
 else 
