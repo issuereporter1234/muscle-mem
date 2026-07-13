@@ -21,7 +21,7 @@ write(){
 	if [[ $PASSWORD == $PASSWORD2 ]]; then
 		local HASH=$( echo -n $PASSWORD | sha256sum | awk '{ print $1 }')
 				echo $HASH > "./.passwds/$FILENAME"
-			
+				chmod 400 "./.passwds/$FILENAME"			
 	else
 		echo "Passwords do not match"
 	fi

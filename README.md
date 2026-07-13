@@ -137,5 +137,5 @@ Each file contains only a SHA-256 hash (no salt, no other metadata).
 ## Notes
 
 - Passwords are never passed as command-line arguments — they're entered exclusively through an interactive `read -s` prompt, so they don't end up visible in `ps` output or in `bash_history`.
-- This is designed for local use (home computer). For a shared/multi-user server, you'd want to add proper permissions (`chmod 700 .passwds`) and possibly a per-entry salt.
+- This is designed for local use (home computer).
 - The script doesn't add a salt before hashing — fine for local practice, but worth keeping in mind if the format is ever extended.
